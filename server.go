@@ -4,33 +4,33 @@ import (
     "fmt"
     "log"
     "net/http"
+    "strconv"
+    "sync"
 )
 
-func main() {
-	// http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request){
- //        fmt.Fprintf(w, "Hello!")
- //    })
+var counter int
+var mutex = &sync.Mutex{}
 
-    http.HandleFunc("/hello", helloHandler)
-
-
-	fmt.Printf("Starting server at port 8080\n")
-    if err := http.ListenAndServe(":8080", nil); err != nil {
-        log.Fatal(err)
-    }
+func echoString(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "hello")
 }
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-    if r.URL.Path != "/hello" {
-        http.Error(w, "404 not found.", http.StatusNotFound)
-        return
-    }
+func incrementCounter(w http.ResponseWriter, r *http.Request) {
+    mutex.Lock()
+    counter++
+    fmt.Fprintf(w, strconv.Itoa(counter))
+    mutex.Unlock()
+}
 
-    if r.Method != "GET" {
-        http.Error(w, "Method is not supported.", http.StatusNotFound)
-        return
-    }
+func main() {
+    http.HandleFunc("/", echoString)
 
+    http.HandleFunc("/increment", incrementCounter)
 
-    fmt.Fprintf(w, "Hello!")
+    http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+        fmt.Fprintf(w, "Hi")
+    })
+
+    log.Fatal(http.ListenAndServe(":8081", nil))
+
 }
