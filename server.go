@@ -4,12 +4,20 @@ import (
     "fmt"
     "log"
     "net/http"
+
+    "go.uber.org/zap"
 )
 
 func main() {
 	// http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request){
  //        fmt.Fprintf(w, "Hello!")
  //    })
+
+    logger, _ := zap.NewProduction()
+    defer logger.Sync()
+
+    sugar := logger.Sugar()
+    sugar.Infof("hey")
 
     http.HandleFunc("/hello", helloHandler)
 
